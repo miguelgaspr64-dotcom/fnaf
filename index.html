@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body { font-family: 'Inter', system-ui; }
+        .g { background: rgba(255,255,255,0.07); backdrop-filter: blur(12px); }
+        iframe { border-radius: 12px; width: 100%; }
+        .tab-active { border-bottom: 3px solid #22d3ee; color: white; }
+    </style>
+</head>
+<body class="bg-neutral-950 text-neutral-100 min-h-screen">
+    <nav class="g border-b border-white/10 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">📚</span>
+                <span class="text-xl font-medium">Student Resources</span>
+            </div>
+            <div class="flex gap-8 text-sm font-medium">
+                <a onclick="nav(1)" class="cursor-pointer hover:text-cyan-400 tab-active" id="tab1">Proxy</a>
+                <a onclick="nav(2)" class="cursor-pointer hover:text-cyan-400" id="tab2">Games</a>
+                <a onclick="nav(3)" class="cursor-pointer hover:text-cyan-400" id="tab3">Search</a>
+                <button onclick="cloak()" class="text-xs px-4 py-1.5 bg-white/10 rounded-xl">Normal View</button>
+                <button onclick="panic()" class="text-xs px-4 py-1.5 bg-red-600 rounded-xl">Exit</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- UNIVERSAL SEARCH BAR (always stays inside) -->
+        <div class="max-w-3xl mx-auto mb-10">
+            <div class="g border border-white/10 rounded-3xl p-2 flex">
+                <input id="top-search" type="text" placeholder="Search DuckDuckGo privately (stays inside)..." 
+                       class="flex-1 bg-transparent px-6 outline-none text-lg">
+                <button onclick="globalSearch()" 
+                        class="bg-cyan-400 hover:bg-cyan-300 text-black px-8 py-4 rounded-3xl font-medium">Search</button>
+            </div>
+        </div>
+
+        <!-- PROXY SECTION -->
+        <div id="s1">
+            <h2 class="text-2xl mb-4">Web Proxy - Everything stays here</h2>
+            <div class="flex gap-3 mb-6">
+                <input id="u" placeholder="https://youtube.com" 
+                       class="flex-1 bg-neutral-900 border border-white/10 rounded-3xl px-6 py-5 outline-none text-lg">
+                <button onclick="loadProxy()" 
+                        class="bg-cyan-400 hover:bg-cyan-300 text-black px-10 rounded-3xl font-semibold">Load Inside</button>
+            </div>
+            <iframe id="proxy-frame" class="h-[620px] bg-white" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"></iframe>
+        </div>
+
+        <!-- GAMES SECTION -->
+        <div id="s2" class="hidden">
+            <h2 class="text-2xl mb-6">Popular Unblocked Games (All stay inside • No .io)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <div class="g p-6 rounded-3xl">
+                    <h3 class="text-xl font-semibold mb-3">🏀 Basketball Random</h3>
+                    <iframe src="https://basketrandom.com/" class="h-[480px]" allowfullscreen></iframe>
+                </div>
+
+                <div class="g p-6 rounded-3xl">
+                    <h3 class="text-xl font-semibold mb-3">🏈 Retro Bowl</h3>
+                    <iframe src="https://retrobowl.org/" class="h-[480px]" allowfullscreen></iframe>
+                </div>
+
+                <div class="g p-6 rounded-3xl">
+                    <h3 class="text-xl font-semibold mb-3">🍪 Cookie Clicker</h3>
+                    <iframe src="https://orteil.dashnet.org/cookieclicker/" class="h-[480px]" allowfullscreen></iframe>
+                </div>
+
+                <div class="g p-6 rounded-3xl">
+                    <h3 class="text-xl font-semibold mb-3">🔢 2048</h3>
+                    <iframe src="https://play2048.co/" class="h-[480px]" allowfullscreen></iframe>
+                </div>
+
+                <div onclick="showTTT()" class="g p-6 rounded-3xl cursor-pointer text-center h-64 flex flex-col items-center justify-center text-6xl hover:scale-105">
+                    ❌ Tic Tac Toe
+                </div>
+
+                <div onclick="showSnake()" class="g p-6 rounded-3xl cursor-pointer text-center h-64 flex flex-col items-center justify-center text-6xl hover:scale-105">
+                    🐍 Snake
+                </div>
+            </div>
+        </div>
+
+        <!-- DEDICATED SEARCH SECTION -->
+        <div id="s3" class="hidden">
+            <h2 class="text-2xl mb-4">Private Search Results</h2>
+            <iframe id="search-frame" class="h-[620px] bg-white" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+    </div>
+
+    <!-- Tic Tac Toe Modal -->
+    <div id="ttt-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+        <div class="bg-neutral-900 p-8 rounded-3xl w-full max-w-md">
+            <h3 class="text-2xl mb-4">Tic Tac Toe</h3>
+            <div id="ttt-board" class="grid grid-cols-3 gap-2 mx-auto" style="width:300px"></div>
+            <div class="text-center mt-6">
+                <button onclick="resetTTT()" class="px-6 py-2 bg-white/10 rounded-2xl">New Game</button>
+                <button onclick="hideModals()" class="px-6 py-2 ml-3">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function nav(n) {
+            document.querySelectorAll('#s1,#s2,#s3').forEach(s => s.classList.add('hidden'));
+            document.getElementById('s'+n).classList.remove('hidden');
+            if (n === 3) loadDuckDuckGo();
+        }
+
+        function loadProxy() {
+            let url = document.getElementById('u').value.trim();
+            if (!url) return alert("Enter a URL");
+            if (!url.startsWith('http')) url = 'https://' + url;
+            document.getElementById('proxy-frame').src = url;
+        }
+
+        function globalSearch() {
+            const q = document.getElementById('top-search').value.trim();
+            if (!q) return;
+            
+            // Switch to search tab and load results
+            nav(3);
+            document.getElementById('search-frame').src = 
+                `https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`;
+            
+            // Clear the input
+            document.getElementById('top-search').value = '';
+        }
+
+        function loadDuckDuckGo() {
+            const frame = document.getElementById('search-frame');
+            if (!frame.src) {
+                frame.src = 'https://html.duckduckgo.com/html/';
+            }
+        }
+
+        function cloak() {
+            document.title = "Google Classroom";
+        }
+
+        function panic() {
+            if (confirm("Exit to safe page?")) window.location.href = "https://classroom.google.com";
+        }
+
+        // Tic Tac Toe (same as before)
+        let tttBoard = Array(9).fill(null);
+        let tttPlayer = 'X';
+
+        function showTTT() {
+            document.getElementById('ttt-modal').classList.remove('hidden');
+            resetTTT();
+        }
+
+        function hideModals() {
+            document.getElementById('ttt-modal').classList.add('hidden');
+        }
+
+        function renderTTT() {
+            const board = document.getElementById('ttt-board');
+            board.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'w-24 h-24 bg-neutral-800 rounded-2xl flex items-center justify-center text-6xl cursor-pointer';
+                cell.textContent = tttBoard[i] || '';
+                cell.onclick = () => tttMove(i);
+                board.appendChild(cell);
+            }
+        }
+
+        function tttMove(i) {
+            if (tttBoard[i]) return;
+            tttBoard[i] = tttPlayer;
+            renderTTT();
+            if (checkTTTWin()) return alert(tttPlayer + " Wins!");
+            if (tttBoard.every(c => c)) return alert("Draw!");
+            tttPlayer = tttPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function checkTTTWin() {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return wins.some(([a,b,c]) => tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]);
+        }
+
+        function resetTTT() {
+            tttBoard = Array(9).fill(null);
+            tttPlayer = 'X';
+            renderTTT();
+        }
+
+        function showSnake() {
+            alert("🐍 Snake coming soon!\n\nUse the Proxy tab to play full versions for now.");
+        }
+
+        window.onload = () => {
+            nav(1);
+            document.title = "Resource Center";
+        };
+    </script>
+</body>
+</html>
